@@ -1,0 +1,102 @@
+version: "2.1"
+services:
+  redis:
+    #platform: linux/amd64
+    command: ["redis-server", "/redis.conf", "--requirepass", "$REDIS_PASSWORD"]
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./config/redis.conf:/redis.conf
+    container_name: "redis"
+    env_file:
+      - ".env"
+    networks:
+      - netwo 
+
+  db:
+    #platform: linux/amd64
+    container_name: "db"
+    image: postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    env_file:
+      - ".env"
+    networks:
+      - netwo 
+
+  web:
+    #platform: linux/amd64
+    container_name: "web"
+    env_file:
+      - ".env"
+    build: .
+    image: openskiessh/flight-blender
+    command: ./entrypoints/with-database/entrypoint.sh
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+    volumes:
+      - .:/app
+    networks:
+      - netwo 
+   # environment:
+   #   - REDIS_BROKER_URL=redis://:blender_redis@redis:6379    
+
+  celery:
+    #platform: linux/amd64
+    container_name: worker
+    image: openskiessh/flight-blender
+    build:
+      context: "."
+    env_file:
+      - ".env"
+    command: ./entrypoints/with-database/entrypoint-celery.sh
+    volumes:
+      - .:/app
+    networks:
+      - netwo 
+    depends_on:
+      - redis
+    
+
+  celery-beat:
+    #platform: linux/amd64
+    container_name: flight-blender-beat
+    image: openskiessh/flight-blender
+    restart: on-failure
+    build:
+      context: "."
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    hostname: celery-beat
+    command: ./entrypoints/with-database/entrypoint-beat.sh
+    volumes:
+      - .:/app
+    networks:
+      - netwo 
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_started
+      celery:
+        condition: service_started
+
+networks:
+  netwo:
+    name: netwo
+    external : true
+    driver: bridge
+    
+volumes:
+  app:
+  db_data:
+  
