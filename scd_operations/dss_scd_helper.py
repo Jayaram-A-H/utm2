@@ -628,7 +628,9 @@ class SCDOperations:
                     # No need to query peer USS, just update the ovn and process the volume locally
                     r = get_redis()
                     opint_flightref = "opint_flightref." + str(current_uss_operational_intent_detail.id)
+                    print(f'ooooo{opint_flightref}')
                     opint_ref_raw = r.get(opint_flightref)
+                    print(f'{opint_ref_raw}')
                     opint_ref = json.loads(opint_ref_raw)
                     opint_id = opint_ref["operation_id"]
                     flight_opint = FLIGHT_OPINT_KEY + opint_id

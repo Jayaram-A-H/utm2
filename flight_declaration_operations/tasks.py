@@ -176,13 +176,15 @@ def submit_flight_declaration_to_dss_async(flight_declaration_id: str):
             print(f'subb{subscribers}')
             if subscribers:
                 for subscriber in subscribers:
-                    print(subscriber)
+                    
                     subscriptions_raw = subscriber.subscriptions
+                    print(f'subbu{subscriptions_raw}')
                     uss_base_url = subscriber.uss_base_url
                     blender_base_url = env.get("BLENDER_FQDN", 0)
-
+                    print(f'ussurlsss{uss_base_url}')
                     if uss_base_url != blender_base_url:  # There are others who are subscribesd, not just ourselves
-                        subscriptions = from_dict(data_class=SubscriptionState, data=subscriptions_raw)
+                        subscriptions = subscriptions_raw[0]
+                        print(json.loads(flight_declaration.operational_intent))
                         op_int_details = from_dict(
                             data_class=OperationalIntentUSSDetails,
                             data=json.loads(flight_declaration.operational_intent),

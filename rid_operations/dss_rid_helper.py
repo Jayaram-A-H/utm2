@@ -220,10 +220,11 @@ class RemoteIDOperations:
             # A token from authority was received,
             new_subscription_id = str(uuid.uuid4())
             dss_subscription_url = self.dss_base_url + "dss/subscriptions/" + new_subscription_id
+            print(f'uurl{dss_subscription_url}')
 
             # check if a subscription already exists for this view_port
 
-            callback_url = env.get("BLENDER_FQDN", "https://www.flightblender.com") + "/dss/identification_service_areas"
+            callback_url = env.get("BLENDER_FQDN", "http://localhost:8000") + "/dss/identification_service_areas"
             now = datetime.now()
 
             callback_url += "/" + new_subscription_id
